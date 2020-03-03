@@ -3,7 +3,7 @@
 #include "rt/rt_api.h"
 #include "window_2048.h"
 #include "p20us_8192.h"
-#include "arg_cluster.h"
+#include "arg_cluster.h" //ArgCluster definition
 #include "FFT_Lib.h"
 #define MOUNT           1
 #define UNMOUNT         0
@@ -48,7 +48,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	//rt_perf_t* welch_perf;
 	/*mem.*/
 
-	/*window transfer*/
+	/*window transfer from L2 to L1*/
 	rt_dma_memcpy(	(unsigned short *)w_L2,//ext
 			(unsigned short *)(ArgC->w_ham),//int
 			sizeof(w_L2)*NFFT_SEG,//loc
@@ -56,18 +56,20 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 			0,
 			&cp2);
 	rt_dma_wait(&cp2);	
-	printf("dma1\n");
 	for(k=1;k<=N_SEG;k++)
 	{	
-		//rt_perf_init(welch_perf);
-		//rt_perf_reset(welch_perf);
-		//rt_perf_start(welch_perf);	
+		//only for profiling
+		/*
+		rt_perf_init(welch_perf);
+		rt_perf_reset(welch_perf);
+		rt_perf_start(welch_perf); 
+		*/
+
+		/*pointer increment*/
 		(ArgC->In)=(unsigned short*)(ArgC->In)+S*(k-1);
 		
-		/*pointer increment*/		
-		
 		/*Input transfer*/
-		rt_dma_memcpy(  (unsigned short *)	In,//ext
+		rt_dma_memcpy(  (unsigned short *)	In+S*(k-1),//ext
 				(unsigned short *)	(ArgC->In),//int
 				sizeof(In)*NFFT_SEG,//loc
 				RT_DMA_DIR_EXT2LOC,
@@ -81,7 +83,6 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 		/*pointer increment*/
 		rt_team_fork(NUM_CORES, pwelch, ArgC);
 		}
-	printf("AE entry\n");
 	//AE
 	rt_team_fork(NUM_CORES,autoencoder,ArgC->PSD);
 	
@@ -106,7 +107,7 @@ int main ()
 //	t2=rt_time_get_us();
 //	printf("pwelch time: %d\n",t2-t1);
 
-	 // allocate performance counters
+	// allocate performance counters
 	rt_perf_t *perf = rt_alloc(RT_ALLOC_L2_CL_DATA, sizeof(rt_perf_t));
 	if (perf == NULL) return -1;
 	/*
@@ -115,126 +116,21 @@ int main ()
 	*/
 	// PRINT FC FREQUENCY //	
 	printf("Soc FC frequency: %d\n",rt_freq_get(__RT_FREQ_DOMAIN_FC));
-
-
-	/*####PWELCH INITIALIZATION####*/
-	        //SETUP INPUT
+	
+	//SETUP INPUT
 	printf("Setup input\n");
 	SetupInput(In, NFFT, IN_DYN);
        	SetupWindowLUT(w_L2, NFFT_SEG, WINDOW_DYN);
-	//printf("SIZE IN: %d",sizeof(Cluster.PSD));	
-	/*SRUCT ARGCLUSTER*/
-	/*
-	Cluster.In= rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(Cluster.In));
-        if((Cluster.In) == 0) printf("error allocating In\n");
-        Cluster.In_FFT= rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(Cluster.In_FFT));
-        if((Cluster.In_FFT) == 0) printf("error allocating In_FFt\n");
-        Cluster.w_ham= rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(Cluster.w_ham));
-        if((Cluster.w_ham) == 0) printf("error allocating w_ham\n");
-        Cluster.PSD= rt_alloc(RT_ALLOC_CL_DATA,(NFFT_SEG/2+1)*sizeof(Cluster.PSD));
-        if((Cluster.PSD) == 0) printf("error allocating PSD\n");
-        Cluster.Twiddles= rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(Cluster.Twiddles));
-        if((Cluster.Twiddles) == 0) printf("error allocating Twiddles\n");
-        Cluster.SwapTable= rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(Cluster.SwapTable));
-        if((Cluster.SwapTable) == 0) printf("error allocating SwapTable\n");
-
-
-        SetupTwiddlesLUT((Cluster.Twiddles), NFFT_SEG, 0);
-        SetupR2SwapTable((Cluster.SwapTable), NFFT_SEG);
-	*/
-
-	//cluster_init(&Cluster);
 	
-/*	unsigned short *In = rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(short)); //In array
-	//pv[0] = rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(short)); //In array
-        //pv[0]=In_L1;
-	if(In == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-
-       signed short *In_FFT = rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(short)); //In_FFT array
-       // pv[1] = rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(short)); //In_FFT array
-       //pv[1]=In_FFT;
-	if(In_FFT == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-
-	unsigned short *w_ham =rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(short)); //w_ham array
-	//pv[2]=rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(short)); //w_ham array
-	//pv[2]=w_ham;
-	if(w_ham == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-
-	unsigned int *PSD = rt_alloc(RT_ALLOC_CL_DATA,(NFFT_SEG/2+1)*sizeof(int)); //PSD array
-	//pv[3] = rt_alloc(RT_ALLOC_CL_DATA,(NFFT_SEG/2+1)*sizeof(int)); //PSD array
-	//pv[3]=PSD;
-	if(PSD == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-        //FFT SETUP
-
-        short *Twiddles = rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(short)); //Twiddles array
-        //pv[4] = rt_alloc(RT_ALLOC_CL_DATA,2*NFFT_SEG*sizeof(short)); //Twiddles array
-       
-	if(Twiddles == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-
-        short *SwapTable = rt_alloc(RT_ALLOC_CL_DATA,NFFT_SEG*sizeof(short)); //SwapTable 
-
-        if(SwapTable == NULL)
-        {
-         printf("memory error!");
-         return(-1);
-        }
-*/	
-	/*L1 BUFFER*/
-/*	printf("memory alloc\n");
-	short *p_buffer=rt_alloc(RT_ALLOC_CL_DATA,L1_BUFFER*sizeof(short));
-	if(p_buffer == NULL) { printf("error\n"); return;}	
-	//pv[4]=Twiddles;
-	//pv[5]=SwapTable;
-*/
-	/*
-	//CHECK
-	printf("WINDOW CHECK\n");
-	float wS2_ck;
-	for(i=0;i<NFFT_SEG;i++)
-	{
-	wS2_ck = ((float) (w_ham[i]))/(1<<WINDOW_DYN);
-	printf("w[%d] ---> %f\n",i,wS2_ck);
-	}
-
-	wS2_ck = ((float) (w_S2))/(1<<WINDOW_DYN);
-	printf("S2 ---> %f\n", wS2_ck);
-	printf("END WINDOW CHECK\n");
-	*/
-	
-
-	/*####END####*/
-
-
 	/*power to the cluster*/
         rt_cluster_mount(MOUNT, CID, 0, NULL);
-	//  PRINT CLUSTER FREQUENCY
+
+	//print cluster frequency
 	printf("Cluster frequency: %d\n",rt_freq_get(__RT_FREQ_DOMAIN_CL));
-	/*CLUSTER TASKS PERFORMANCE*/
 	
 	/*#### CLUSTER CALLS #####*/
 	/*PW CLUSTER CALL*/
 	printf("CLUSTER CALL: Setup Pwelch Structure\n");
-	
 	rt_cluster_call(NULL, CID, (void (*)(void *))cluster_init,&Cluster, NULL, 1024, 1024, rt_nb_pe(),NULL);	
 	printf("Cluster call 2\n");
 	rt_cluster_call(NULL, CID, (void (*)(void *))pwelch_parallel,&Cluster, NULL, 1024, 1024, rt_nb_pe(),NULL);	
@@ -323,6 +219,7 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	ArgC->SwapTable=SwapTable; 
 	if((ArgC->SwapTable) == 0) printf("error allocating SwapTable\n"); 
 
+	//only for performance profiling
 /*	
 	ArgC->welch_perf = rt_alloc(RT_ALLOC_L2_CL_DATA, sizeof(rt_perf_t));
         if (ArgC->welch_perf == NULL) return -1;
