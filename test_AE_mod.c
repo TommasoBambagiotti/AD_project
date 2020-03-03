@@ -38,7 +38,7 @@ RT_FC_SHARED_DATA int8_t out_L2[OUT_NEURONS_4];
 					
 //RT_FC_SHARED_DATA int8_t *out_L2; 
 
-int test_layers(unsigned int *input_data_L1)
+int autoencoder(unsigned int *input_data_L1)
 {
 
 	if(rt_core_id()==0) //core 0 stuff, not FC

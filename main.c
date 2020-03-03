@@ -12,7 +12,7 @@
 #define S NFFT_SEG/2
 
 /*Function prototypes*/
-int test_layers(unsigned int *input_data_L1);
+int autoencoder(unsigned int *input_data_L1);
 void pwelch (ArgCluster_t *ArgC);
 void SetupWindowLUT(unsigned short *w, int N, int Dyn);
 void  SetupInput(unsigned short * In, int N, int Dyn); 
@@ -35,7 +35,7 @@ RT_L2_DATA unsigned short In[NFFT], w_L2[NFFT_SEG];
 void pulp_parallel(unsigned int *input_data_L1)
 {
 	
-  rt_team_fork(NUM_CORES, test_layers, input_data_L1 );
+  rt_team_fork(NUM_CORES, autoencoder, input_data_L1 );
 
 
 }
@@ -83,7 +83,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 		}
 	printf("AE entry\n");
 	//AE
-	rt_team_fork(NUM_CORES,test_layers,ArgC->PSD);
+	rt_team_fork(NUM_CORES,autoencoder,ArgC->PSD);
 	
 	printf("exit from cluster\n");	
 
