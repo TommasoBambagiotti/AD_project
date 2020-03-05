@@ -10,7 +10,7 @@ CORES=$(cores) #pulp_fft variable
 
 #@@@ FFT DEFINE @@@
 
-n_seg = 7 #number of segments in Whelc's alg.
+n_seg = 7 #(NFFT/(NFFT_SEG/2) - 1) with this numbers we ensure an overlap of 50% between two adjacent segments, where NFFT_SEG/2 is the number of overlapping points for each segment
 nfft_seg = 2048 #number of point for every segment
 nfft = 8192 #number of total fft point
 in_dyn = 5 #number of decimal digits in fixed point representation for input data
