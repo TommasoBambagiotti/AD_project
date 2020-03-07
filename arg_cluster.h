@@ -11,5 +11,6 @@ typedef struct ArgCluster {
         short*                  SwapTable;
 	rt_perf_t*		welch_perf; //performance counter
 //	ArgNN_t			Cluster_NN;
+	unsigned short 		Count;
 }ArgCluster_t;
 
