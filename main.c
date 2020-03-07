@@ -26,7 +26,7 @@ RT_L1_DATA unsigned short In_L1[NFFT_SEG], w_ham[NFFT_SEG];
 RT_L1_DATA signed short In_FFT[2*NFFT_SEG];
 RT_L1_DATA unsigned int PSD[NFFT_SEG/2+1];
 RT_L2_DATA unsigned short In[NFFT], w_L2[NFFT_SEG];
-
+RT_L1_DATA unsigned short Seg_count = 0;
 
 
 
@@ -64,12 +64,16 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 		rt_perf_reset(welch_perf);
 		rt_perf_start(welch_perf); 
 		*/
+			
+		//segment counter
+		ArgC->Count=ArgC->Count + 1;
 
-		/*pointer increment*/
-		(ArgC->In)=(unsigned short*)(ArgC->In)+S*(k-1);
-		
-		/*Input transfer*/
-		rt_dma_memcpy(  (unsigned short *)	In+S*(k-1),//ext
+		//pointer increment
+		(ArgC->In)=(unsigned short*)(ArgC->In+S*(k-1));
+		//printf("pointer check\n(ext loc.) %d (int loc.) %d\n",In+S*(k-1),ArgC->In);
+				
+		//Input transfer
+		rt_dma_memcpy(  (unsigned short *)	(In+S*(k-1)),//ext 
 				(unsigned short *)	(ArgC->In),//int
 				sizeof(In)*NFFT_SEG,//loc
 				RT_DMA_DIR_EXT2LOC,
@@ -179,7 +183,8 @@ void  SetupInput(unsigned short * In, int N, int Dyn)
 	{
 	In[2*i] =(unsigned short) (data[i]*((1<<Dyn)));
 	In[2*i+1]=0;
-	}
+	}	
+	
 
 }
 
@@ -207,7 +212,7 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
  void cluster_init(ArgCluster_t *ArgC  )
 {
 	ArgC->In=In_L1; 
-	if((ArgC->In) == 0) printf("error allocating In\n"); 
+	if((ArgC->In) == 0) printf("error allocating In\n");
 	ArgC->In_FFT=In_FFT; 
 	if((ArgC->In_FFT) == 0) printf("error allocating In_FFt\n"); 
 	ArgC->w_ham=w_ham; 
@@ -218,6 +223,8 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	if((ArgC->Twiddles) == 0) printf("error allocating Twiddles\n"); 
 	ArgC->SwapTable=SwapTable; 
 	if((ArgC->SwapTable) == 0) printf("error allocating SwapTable\n"); 
+	ArgC->Count = Seg_count;
+	
 
 	//only for performance profiling
 /*	
