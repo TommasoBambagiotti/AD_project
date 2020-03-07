@@ -49,8 +49,8 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	/*mem.*/
 
 	/*window transfer from L2 to L1*/
-	rt_dma_memcpy(	(unsigned short *)w_L2,//ext
-			(unsigned short *)(ArgC->w_ham),//int
+	rt_dma_memcpy(	w_L2,//ext //(unsigned short *)
+			ArgC->w_ham,//int
 			sizeof(w_L2)*NFFT_SEG,//loc
 			RT_DMA_DIR_EXT2LOC,
 			0,
@@ -67,25 +67,31 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 			
 		//segment counter
 		ArgC->Count=ArgC->Count + 1;
-
-		//pointer increment
-		(ArgC->In)=(unsigned short*)(ArgC->In+S*(k-1));
-		//printf("pointer check\n(ext loc.) %d (int loc.) %d\n",In+S*(k-1),ArgC->In);
 				
 		//Input transfer
-		rt_dma_memcpy(  (unsigned short *)	(In+S*(k-1)),//ext 
-				(unsigned short *)	(ArgC->In),//int
+		rt_dma_memcpy(  	(In+S*(k-1)),//ext 
+					(ArgC->In+S*(k-1)),//int
 				sizeof(In)*NFFT_SEG,//loc
 				RT_DMA_DIR_EXT2LOC,
 				0,
 				&cp1);
 		rt_dma_wait(&cp1);
+		for(int i=0;i<NFFT_SEG-2000;i++)
+		{
+			printf("ArgC->w_ham %d ArgC->In %d In %d w %d\n",ArgC->w_ham[i],ArgC->In[i],In[i],w_L2[i]);
+
+		}
 //		printf("dma2\n");
 		//rt_perf_stop(welch_perf);
 		//rt_perf_save(welch_perf);
 		//printf("DMA overhead: %d\n",rt_perf_get(welch_perf,RT_PERF_CYCLES));	
 		/*pointer increment*/
 		rt_team_fork(NUM_CORES, pwelch, ArgC);
+		
+		//pointer increment
+		//(ArgC->In)=(unsigned short*)(ArgC->In+S*(k-1));
+		//printf("pointer check\n(ext loc.) %d (int loc.) %d\n",In+S*(k-1),ArgC->In);
+
 		}
 	//AE
 	rt_team_fork(NUM_CORES,autoencoder,ArgC->PSD);
@@ -181,8 +187,8 @@ void  SetupInput(unsigned short * In, int N, int Dyn)
 	
 	for(i=0;i<N;i++)
 	{
-	In[2*i] =(unsigned short) (data[i]*((1<<Dyn)));
-	In[2*i+1]=0;
+	In[i] =(unsigned short) (data[i]*((1<<Dyn)));
+	//In[2*i+1]=0;
 	}	
 	
 

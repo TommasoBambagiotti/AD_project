@@ -3,9 +3,9 @@
 
 //Structure needed for pwelch cluster call 
 typedef struct ArgCluster {
-        unsigned short *        In; //input samples
+        unsigned short*         In; //input samples (real value)
         signed short*           In_FFT; //FFT input samples
-        unsigned short*         w_ham; //hamming window samples
+        unsigned short*        w_ham; //hamming window samples
         unsigned int*           PSD; //PSD array
         short*                  Twiddles; 
         short*                  SwapTable;

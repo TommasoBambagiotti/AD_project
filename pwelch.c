@@ -47,7 +47,7 @@ void pwelch (ArgCluster_t *ArgC )
 	short *Twiddles=ArgC->Twiddles;
 	short *SwapTable=ArgC->SwapTable;
 */
-	float In; //check variables
+	float re,im; //check variables
 	//float wS2_ck, wck, Inck; //check variables
 	
 
@@ -72,12 +72,14 @@ void pwelch (ArgCluster_t *ArgC )
 		//printf("Segment %d\n",k);
 #ifdef INPUT_CHECK
 
-if(rt_code_id() == 0)
+if((rt_core_id() == 0) && (ArgC->Count == 1))
 {
 	for(i=0; i<NFFT_SEG; i++)
 	{
-	In = ((float) (ArgC->In[i]/(1<<IN_DYN)));
-	printf("%4.7f\n",In);
+	
+	re = (((float) (ArgC->In[i]))/(1<<IN_DYN));
+	//im = (((float) (ArgC->In[2*i + 1]))/(1<<IN_DYN));
+	printf("%4.7f\n",re);
 	}
 
 }
