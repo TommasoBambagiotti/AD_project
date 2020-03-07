@@ -47,7 +47,7 @@ void pwelch (ArgCluster_t *ArgC )
 	short *Twiddles=ArgC->Twiddles;
 	short *SwapTable=ArgC->SwapTable;
 */
-	//float Re,Im; //check variables
+	float In; //check variables
 	//float wS2_ck, wck, Inck; //check variables
 	
 
@@ -70,9 +70,23 @@ void pwelch (ArgCluster_t *ArgC )
 		//if(rt_core_id()==0)	
 		//printf("pre pwelch\n");;
 		//printf("Segment %d\n",k);
+#ifdef INPUT_CHECK
+
+if(rt_code_id() == 0)
+{
+	for(i=0; i<NFFT_SEG; i++)
+	{
+	In = ((float) (ArgC->In[i]/(1<<IN_DYN)));
+	printf("%4.7f\n",In);
+	}
+
+}
 
 
 
+
+#else //INPUT_CHECK
+ 
 #ifdef PROF_PWELCH
 		INIT_PROFILING();
 		START_PROFILING();
@@ -321,6 +335,7 @@ void pwelch (ArgCluster_t *ArgC )
 	printf("core[%d] cycles,instructions: %d,%d\n",rt_core_id(),rt_perf_get(perf,RT_PERF_CYCLES),rt_perf_get(perf,RT_PERF_INSTR));
 	*/
 
+#endif //INPUT_CHECK
 }
 
 
