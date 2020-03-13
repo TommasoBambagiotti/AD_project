@@ -27,7 +27,8 @@ RT_L1_DATA signed short In_FFT[2*NFFT_SEG];
 RT_L1_DATA unsigned int PSD[NFFT_SEG/2+1];
 RT_L2_DATA unsigned short In[NFFT], w_L2[NFFT_SEG];
 RT_L1_DATA unsigned short Seg_count = 0;
-
+RT_L1_DATA short dummy_L1 = 0;
+RT_L2_DATA short dummy_L2 = 2;
 
 
 /*Cluster calls*/
@@ -43,27 +44,43 @@ void pulp_parallel(unsigned int *input_data_L1)
 
 void pwelch_parallel(ArgCluster_t *ArgC)
 {
-	int k=0,t1,t2;
-	rt_dma_copy_t cp1, cp2;
-	//rt_perf_t* welch_perf;
-	/*mem.*/
+	int k=0,t1,t2, i= 0;
+	rt_dma_copy_t cp1, cp2,cp3;
+	
 
-	/*window transfer from L2 to L1*/
-	rt_dma_memcpy(	(int) w_L2,//ext //(unsigned short *)
-			(int) ArgC->w_ham,//int
-			sizeof(w_L2)*NFFT_SEG,//loc
+	//rt_perf_t* welch_perf;
+	
+	rt_dma_memcpy( &dummy_L2,
+			&dummy_L1,
+			sizeof(short),
+			RT_DMA_DIR_EXT2LOC,
+			0,
+			&cp3);
+	rt_dma_wait(&cp3);
+	printf("dummy check 2=%d\n",dummy_L1);	
+	
+	//window transfer from L2 to L1
+	rt_dma_memcpy(	w_L2,//ext 
+			ArgC->w_ham,//int
+			sizeof(short)*NFFT_SEG,//loc
 			RT_DMA_DIR_EXT2LOC,
 			0,
 			&cp2);
-	rt_dma_wait(&cp2);	
+	rt_dma_wait(&cp2);
+
+	//check
+	for(i=0;i<NFFT_SEG;i++)
+	{
+		if(ArgC->w_ham[i] != w_L2[i]) printf("transfer error!\n");
+	}	
 	for(k=1;k<=N_SEG;k++)
 	{	
 		//only for profiling
-		/*
-		rt_perf_init(welch_perf);
-		rt_perf_reset(welch_perf);
-		rt_perf_start(welch_perf); 
-		*/
+		
+		//rt_perf_init(welch_perf);
+		//rt_perf_reset(welch_perf);
+		//rt_perf_start(welch_perf); 
+		
 			
 		//segment counter
 		ArgC->Count=ArgC->Count + 1;
@@ -71,21 +88,17 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 		//Input transfer
 		rt_dma_memcpy(  	(In+S*(k-1)),//ext 
 					(ArgC->In+S*(k-1)),//int
-				sizeof(In)*NFFT_SEG,//loc
+				sizeof(short)*NFFT_SEG,//loc
 				RT_DMA_DIR_EXT2LOC,
 				0,
 				&cp1);
 		rt_dma_wait(&cp1);
-		for(int i=0;i<NFFT_SEG-2000;i++)
-		{
-			printf("ArgC->w_ham %d ArgC->In %d In %d w %d\n",ArgC->w_ham[i],	ArgC->In[i],In[i],w_L2[i]);
-
-		}
+		
 //		printf("dma2\n");
 		//rt_perf_stop(welch_perf);
 		//rt_perf_save(welch_perf);
 		//printf("DMA overhead: %d\n",rt_perf_get(welch_perf,RT_PERF_CYCLES));	
-		/*pointer increment*/
+		//pointer increment
 		rt_team_fork(NUM_CORES, pwelch, ArgC);
 		
 		//pointer increment
@@ -97,7 +110,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	rt_team_fork(NUM_CORES,autoencoder,ArgC->PSD);
 	
 	printf("exit from cluster\n");	
-
+	
 }
 
 
