@@ -49,8 +49,8 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	/*mem.*/
 
 	/*window transfer from L2 to L1*/
-	rt_dma_memcpy(	w_L2,//ext //(unsigned short *)
-			ArgC->w_ham,//int
+	rt_dma_memcpy(	(int) w_L2,//ext //(unsigned short *)
+			(int) ArgC->w_ham,//int
 			sizeof(w_L2)*NFFT_SEG,//loc
 			RT_DMA_DIR_EXT2LOC,
 			0,
@@ -78,7 +78,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 		rt_dma_wait(&cp1);
 		for(int i=0;i<NFFT_SEG-2000;i++)
 		{
-			printf("ArgC->w_ham %d ArgC->In %d In %d w %d\n",ArgC->w_ham[i],ArgC->In[i],In[i],w_L2[i]);
+			printf("ArgC->w_ham %d ArgC->In %d In %d w %d\n",ArgC->w_ham[i],	ArgC->In[i],In[i],w_L2[i]);
 
 		}
 //		printf("dma2\n");
@@ -218,7 +218,7 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
  void cluster_init(ArgCluster_t *ArgC  )
 {
 	ArgC->In=In_L1; 
-	if((ArgC->In) == 0) printf("error allocating In\n");
+	if((ArgC->In) == NULL) printf("error allocating In\n");
 	ArgC->In_FFT=In_FFT; 
 	if((ArgC->In_FFT) == 0) printf("error allocating In_FFt\n"); 
 	ArgC->w_ham=w_ham; 
@@ -230,6 +230,10 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	ArgC->SwapTable=SwapTable; 
 	if((ArgC->SwapTable) == 0) printf("error allocating SwapTable\n"); 
 	ArgC->Count = Seg_count;
+	
+
+	//printf("ArgC->In[0] %d In[0] %d \n",ArgC->In[0],In_L1[0]);
+	
 	
 
 	//only for performance profiling
