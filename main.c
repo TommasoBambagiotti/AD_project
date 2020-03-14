@@ -43,12 +43,8 @@ void pulp_parallel(unsigned int *input_data_L1)
 
 void pwelch_parallel(ArgCluster_t *ArgC)
 {
-	int k=0,t1,t2, i= 0;
-	rt_dma_copy_t cp1, cp2;
-	
-
-	//rt_perf_t* welch_perf;
-	
+	int k=0, i= 0;
+	rt_dma_copy_t cp1, cp2, cp3;
 	
 	
 	//window transfer from L2 to L1
@@ -66,43 +62,54 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	//	if(ArgC->w_ham[i] != w_L2[i]) printf("transfer error!\n");
 	//}	
 	
-	for(k=1;k<=(N_SEG+1)/2 ;k++)
+	for(k=0;k<(N_SEG-1) ;k++)
 	{	
-		//only for profiling
 		
-		//rt_perf_init(welch_perf);
-		//rt_perf_reset(welch_perf);
-		//rt_perf_start(welch_perf); 
-		
-			//Input transfer
-			rt_dma_memcpy(  	In+NFFT_SEG*(k-1),//ext 
-						ArgC->In+NFFT_SEG*(k-1),//int
-						sizeof(short)*NFFT_SEG,//loc
-						RT_DMA_DIR_EXT2LOC,
-						0,
-						&cp2);
-			rt_dma_wait(&cp2);
+		if((ArgC->Count == 0))
+		{
+		//Input transfer
+		rt_dma_memcpy(  	In,//ext 
+					ArgC->In,//int
+					sizeof(short)*NFFT_SEG,//loc
+					RT_DMA_DIR_EXT2LOC,
+					0,
+					&cp2);
+		rt_dma_wait(&cp2);
 
+		//check transfer
+		//for(i=0;i<NFFT_SEG;i++)
+		//{
+		//if(ArgC->In[i+NFFT_SEG*(k-1)] != In[i+NFFT_SEG*(k-1)]) printf("Seg %d transfer error\n",ArgC->Count);
+		//}
+		
+		
+		rt_team_fork(NUM_CORES, pwelch, ArgC); //### PWELCH ###
+		ArgC->Count=ArgC->Count + 1; //segment counter increment
+		}
+		else
+		{
+			if((ArgC->Count > 0))
+			{
+				//Input transfer
+				rt_dma_memcpy(  	In+(NFFT_SEG/2)*(k-1)+NFFT_SEG,//ext 
+							ArgC->In+(NFFT_SEG/2)*(k-1)+NFFT_SEG,//int
+							sizeof(short)*NFFT_SEG/2,//loc
+							RT_DMA_DIR_EXT2LOC,
+							0,
+							&cp3);
+				rt_dma_wait(&cp3);
+				
 			//check transfer
-			//for(i=0;i<NFFT_SEG;i++)
+			//for(i=0;i<NFFT_SEG/2;i++)
 			//{
-			//	if(ArgC->In[i+NFFT_SEG*(k-1)] != In[i+NFFT_SEG*(k-1)]) printf("Seg %d transfer error\n",ArgC->Count);
-			//}
-		
-			//### PWELCH ###
-			//rt_team_fork(NUM_CORES, pwelch, ArgC);
-			ArgC->Count=ArgC->Count + 1; //segment counter increment
-		
+			//	if(ArgC->In[i+(NFFT_SEG/2)*(k-1)+NFFT_SEG] != In[i+(NFFT_SEG/2)*(k-1)+NFFT_SEG]) printf("Seg %d transfer error\n",ArgC->Count);
+			//}		
+				rt_team_fork(NUM_CORES, pwelch, ArgC);//### PWELCH ###
+				ArgC->Count=ArgC->Count + 1; //segment counter increment
+			}//if
+		}//else
 
 		
-		//printf("dma2\n");
-		//rt_perf_stop(welch_perf);
-		//rt_perf_save(welch_perf);
-		//printf("DMA overhead: %d\n",rt_perf_get(welch_perf,RT_PERF_CYCLES));	
-		
-		//### PWELCH ###
-		//rt_team_fork(NUM_CORES, pwelch, ArgC);
-
 		}
 	//AE
 	//rt_team_fork(NUM_CORES,autoencoder,ArgC->PSD);
