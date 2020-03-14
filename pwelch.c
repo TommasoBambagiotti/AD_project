@@ -1,5 +1,3 @@
-
-
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
@@ -39,6 +37,7 @@ void pwelch (ArgCluster_t *ArgC )
 {
   	int i=0;
 	int m=0;
+	int seg_Inc = 0;
 /*		
 	unsigned short  *In=ArgC->In;
 	signed short *In_FFT=ArgC->In_FFT;
@@ -48,7 +47,7 @@ void pwelch (ArgCluster_t *ArgC )
 	short *SwapTable=ArgC->SwapTable;
 */
 	float re,im; //check variables
-	//float wS2_ck, wck, Inck; //check variables
+	float wS2_ck, wck, Inck; //check variables
 	
 
 	/*###Profiling variables###*/	
@@ -94,6 +93,8 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 		START_PROFILING();
 #endif		
 
+
+		seg_Inc = ArgC->Count;
 		rt_team_barrier();
 		for(m = 0;m < NFFT_SEG/NUM_CORES ;m++)
 		{
@@ -103,57 +104,60 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 			x[m]*w[m] ---> Q11.21 unsigned int
 			1) Shift ((x[m]*w[m]) >> 16 ) Q11.5 because the FFT input data are short
 			2) Shift (x[m]*w[m]) >> 1 ) Q11.4 because the FFT input data are signed
+			INC ---> cores increment 
+			seg_Inc ---> increment in ArgC->In array 
 */
+
 			switch (rt_core_id()) {
 
 			case 0: {
-			ArgC->In_FFT[2*m] =(signed short) ((((unsigned int) ArgC->w_ham[m])*((unsigned int) ArgC->In[m]))>>17);
+			ArgC->In_FFT[2*m] =(signed short) ((((unsigned int) ArgC->w_ham[m+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*m+1] = (signed short) 0;
 	//		printf("core 0 done: ID[%d]\n",rt_core_id());
 				} break;
 			case 1: {
-			ArgC->In_FFT[2*(m+INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+INC])*((unsigned int) ArgC->In[m+INC]))>>17);
+			ArgC->In_FFT[2*(m+INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+INC)+1] = (signed short) 0;
 		//	printf("core 1 done\n");
 				} break;
 
 
 			case 2: {
-			ArgC->In_FFT[2*(m+2*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+2*INC])*((unsigned int) ArgC->In[m+2*INC]))>>17);
+			ArgC->In_FFT[2*(m+2*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+2*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+2*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+2*INC)+1] = (signed short) 0;
 
 		//	printf("core 2 done\n");
 				} break;
 
 			case 3: {
-			ArgC->In_FFT[2*(m+3*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+3*INC])*((unsigned int) ArgC->In[m+3*INC]))>>17);
+			ArgC->In_FFT[2*(m+3*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+3*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+3*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+3*INC)+1] = (signed short) 0;
 		//	printf("core 3 done\n");
 			
 				}break;
 
 			case 4: {
-			ArgC->In_FFT[2*(m+4*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+4*INC])*((unsigned int) ArgC->In[m+4*INC]))>>17);
+			ArgC->In_FFT[2*(m+4*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+4*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+4*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+4*INC)+1] = (signed short) 0;
 
 		//	printf("core 4 done\n");
 				}break;
 			case 5: {
-			ArgC->In_FFT[2*(m+5*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+5*INC])*((unsigned int) ArgC->In[m+5*INC]))>>17);
+			ArgC->In_FFT[2*(m+5*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+5*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+5*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+5*INC)+1] = (signed short) 0;
 
 		//	printf("core 5 done\n");
 				}break;
 
 			case 6: {
-			ArgC->In_FFT[2*(m+6*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+6*INC])*((unsigned int) ArgC->In[m+6*INC]))>>17);
+			ArgC->In_FFT[2*(m+6*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+6*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+6*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+6*INC)+1] = (signed short) 0;
 
 		//	printf("core 6 done\n");
 				}break;
 
 			case 7: {
-			ArgC->In_FFT[2*(m+7*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+7*INC])*((unsigned int) ArgC->In[m+7*INC]))>>17);
+			ArgC->In_FFT[2*(m+7*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+7*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+7*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+7*INC)+1] = (signed short) 0;
 
 		//	printf("core 7 done\n");
@@ -162,24 +166,25 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 
 			}//switch
 
-	/*
-			if(rt_core_id() == 0)
-			{	
-			//FIXED POINT TO FLOAT CONVERSION and CHECK
-			Re = ((float)(In_FFT[2*(m-(k-1)*S)])/(1<<(FFT2_SAMPLE_DYN)));
-			wck = ((float)(w_ham[m-(k-1)*S])/(1<<(WINDOW_DYN)));
-			Inck = ((float)(In[2*m])/(1<<(IN_DYN)));
-
-			//CHECK
-		
-		//	if(k==(N_SEG-1))
-			printf("In_FFT[%d] = %10d | %f %10d\t\tIn_FFT[%d] = w_ham[%d]*In[%d] = %10d*%10d | %f*%f;\n",2*(m-(k-1)*S),In_FFT[2*(m-(k-1)*S)],Re,In_FFT[2*(m-(k-1)*S)+1],2*(m-(k-1)*S),m-(k-1)*S,m,w_ham[m-(k-1)*S],In[2*m],wck,Inck);
-			}*/
+	
 
 	}//for
+	if((rt_core_id() == 0) && (seg_Inc == 3))
+	{
+		for(m=0;m<NFFT_SEG;m++)
+		{	
+			//FIXED POINT TO FLOAT CONVERSION and CHECK
+			re = ((float)(ArgC->In_FFT[2*m])/(1<<(FFT2_SAMPLE_DYN)));
+			wck = ((float)(ArgC->w_ham[m])/(1<<(WINDOW_DYN)));
+			Inck = ((float)(ArgC->In[m])/(1<<(IN_DYN)));
+
+			printf("In_FFT[%d] = %10d | %4.7f In_FFT[%d] = w_ham[%d]*In[%d] = %10d*%10d | %4.7f*%4.7f;\n",2*m,ArgC->In_FFT[2*m],re,m,m,m,ArgC->w_ham[m],ArgC->In[m],wck,Inck);
+			
+		}	
+	}
 
 
-
+#ifdef FFT_SECTION
 
 
 /*
@@ -295,7 +300,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 */
  }
 
-
+#endif //FFT_SECTION
 #ifdef PROF_PWELCH
 	STOP_PROFILING();
 #endif
