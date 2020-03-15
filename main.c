@@ -62,9 +62,9 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	//	if(ArgC->w_ham[i] != w_L2[i]) printf("transfer error!\n");
 	//}	
 	
-	for(k=0;k<(N_SEG-1) ;k++)
+	for(k=0;k<N_SEG ;k++)
 	{	
-		
+		printf("segment n: %d\n",ArgC->Count);
 		if((ArgC->Count == 0))
 		{
 		//Input transfer

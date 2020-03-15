@@ -37,7 +37,7 @@ void pwelch (ArgCluster_t *ArgC )
 {
   	int i=0;
 	int m=0;
-	int seg_Inc = 0;
+	int seg_Inc;
 /*		
 	unsigned short  *In=ArgC->In;
 	signed short *In_FFT=ArgC->In_FFT;
@@ -93,8 +93,10 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 		START_PROFILING();
 #endif		
 
-
+		SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);	
 		seg_Inc = ArgC->Count;
+		if(rt_core_id()==0)
+		printf("segment(inside pwelch): %d\n",seg_Inc);
 		rt_team_barrier();
 		for(m = 0;m < NFFT_SEG/NUM_CORES ;m++)
 		{
@@ -106,70 +108,66 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 			2) Shift (x[m]*w[m]) >> 1 ) Q11.4 because the FFT input data are signed
 			INC ---> cores increment 
 			seg_Inc ---> increment in ArgC->In array 
-*/
-
+*/		
 			switch (rt_core_id()) {
 
 			case 0: {
-			ArgC->In_FFT[2*m] =(signed short) ((((unsigned int) ArgC->w_ham[m+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*m] =(signed short) ((((unsigned int) ArgC->w_ham[m])*((unsigned int) ArgC->In[m+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*m+1] = (signed short) 0;
 	//		printf("core 0 done: ID[%d]\n",rt_core_id());
 				} break;
 			case 1: {
-			ArgC->In_FFT[2*(m+INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+INC])*((unsigned int) ArgC->In[m+INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+INC)+1] = (signed short) 0;
 		//	printf("core 1 done\n");
 				} break;
 
 
 			case 2: {
-			ArgC->In_FFT[2*(m+2*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+2*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+2*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+2*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+2*INC])*((unsigned int) ArgC->In[m+2*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+2*INC)+1] = (signed short) 0;
 
 		//	printf("core 2 done\n");
 				} break;
 
 			case 3: {
-			ArgC->In_FFT[2*(m+3*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+3*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+3*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+3*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+3*INC])*((unsigned int) ArgC->In[m+3*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+3*INC)+1] = (signed short) 0;
 		//	printf("core 3 done\n");
 			
 				}break;
 
 			case 4: {
-			ArgC->In_FFT[2*(m+4*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+4*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+4*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+4*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+4*INC])*((unsigned int) ArgC->In[m+4*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+4*INC)+1] = (signed short) 0;
 
 		//	printf("core 4 done\n");
 				}break;
 			case 5: {
-			ArgC->In_FFT[2*(m+5*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+5*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+5*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+5*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+5*INC])*((unsigned int) ArgC->In[m+5*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+5*INC)+1] = (signed short) 0;
 
 		//	printf("core 5 done\n");
 				}break;
 
 			case 6: {
-			ArgC->In_FFT[2*(m+6*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+6*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+6*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+6*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+6*INC])*((unsigned int) ArgC->In[m+6*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+6*INC)+1] = (signed short) 0;
 
 		//	printf("core 6 done\n");
 				}break;
 
 			case 7: {
-			ArgC->In_FFT[2*(m+7*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+7*INC+(NFFT_SEG/2)*seg_Inc])*((unsigned int) ArgC->In[m+7*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
+			ArgC->In_FFT[2*(m+7*INC)] =(signed short) ((((unsigned int) ArgC->w_ham[m+7*INC])*((unsigned int) ArgC->In[m+7*INC+(NFFT_SEG/2)*seg_Inc]))>>17);
 			ArgC->In_FFT[2*(m+7*INC)+1] = (signed short) 0;
 
 		//	printf("core 7 done\n");
 				}break;
-
-
 			}//switch
-
-	
-
 	}//for
-	if((rt_core_id() == 0) && (seg_Inc == 3))
+
+#ifdef WINDOWING_CHECK	
+	if((rt_core_id() == 0) && (seg_Inc == 1))
 	{
 		for(m=0;m<NFFT_SEG;m++)
 		{	
@@ -182,9 +180,9 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 			
 		}	
 	}
+#endif
 
-
-#ifdef FFT_SECTION
+#ifdef FFT
 
 
 /*
@@ -199,9 +197,12 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 //	t1=rt_time_get_us();
 //	if(i==1) {printf("pre-fft\n");i++;}
 
-
+	if(rt_core_id()==0)
+	printf("pre FFT\n");
 	rt_team_barrier();
 	Radix2FFT_DIF_Par(ArgC->In_FFT, ArgC->Twiddles, NFFT_SEG);
+	if(rt_core_id()==0)
+	printf("post FFT\n");
 
 //	t2=rt_time_get_us();
 //	printf("%d point window FFT time: %d\n",NFFT_SEG,t2-t1);
@@ -210,7 +211,10 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 	/*only core 0 swaps samples*/
 	if(rt_core_id() == 0)
 	{
+	printf("pre swap\n");
+	
 	SwapSamples  ((v2s *) ArgC->In_FFT, ArgC->SwapTable, NFFT_SEG);
+	printf("post swap\n");
 	}
 
 
@@ -234,8 +238,9 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 	//PSD OK
 //	if(i==2) {printf("pre-prodotto\n");i++;}
 
+#endif //FFT_SECTION
 
-
+#ifdef PSD
 	rt_team_barrier();	
 	for(i=0;i<(NFFT_SEG/2)/NUM_CORES;i++)
 	{
@@ -299,8 +304,8 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
        		 ArgC->PSD[i]=  (ArgC->PSD[i]) +((((unsigned int)((ArgC->In_FFT[2*i])*(ArgC->In_FFT[2*i]))) >> N_SEG ) + (((unsigned int)((ArgC->In_FFT[2*i+1])*(ArgC->In_FFT[2*i+1]))) >> N_SEG)) ;
 */
  }
+#endif //PSD
 
-#endif //FFT_SECTION
 #ifdef PROF_PWELCH
 	STOP_PROFILING();
 #endif
