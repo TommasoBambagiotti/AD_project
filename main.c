@@ -46,7 +46,9 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	int k=0, i= 0;
 	rt_dma_copy_t cp1, cp2, cp3;
 	
-	
+	SetupTwiddlesLUT((ArgC->Twiddles), NFFT_SEG, 0);
+        //SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);	
+
 	//window transfer from L2 to L1
 	rt_dma_memcpy(	w_L2,//ext 
 			ArgC->w_ham,//int
@@ -261,9 +263,6 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	rt_perf_init(ArgC->welch_perf);
 	rt_perf_conf(ArgC->welch_perf,RT_PERF_CYCLES);
 */	
-
-        SetupTwiddlesLUT((ArgC->Twiddles), NFFT_SEG, 0);
-        SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);
 
 }
 
