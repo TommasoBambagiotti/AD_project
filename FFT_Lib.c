@@ -443,14 +443,20 @@ void SwapSamples (v2s *__restrict__ Data, short *__restrict__ SwapTable, int Ni)
 
 {
   int i;
-
+	
   for (i = 0; i < Ni; i++) {
-    v2s S = Data[i];
-    int SwapIndex = SwapTable[i];
-    if (i < SwapIndex) {
-      Data[i] = Data[SwapIndex]; Data[SwapIndex] = S;
-    }
+  
+	  v2s S = Data[i];
+	   
+ int SwapIndex = SwapTable[i];
+  
+	if (i < SwapIndex) {
+	
+      Data[i] = Data[SwapIndex]; 
+Data[SwapIndex] = S;
+    	}
   }
+	
 }
 
 #ifdef BUILD_LUT
