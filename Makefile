@@ -21,7 +21,7 @@ prof_pwelch = 0 # 0=DON'T DO PWELCH PROFILING; 1=DO PWELCH PROFILING
 
 PULP_APP = test_fft
 PULP_APP_FC_SRCS =main.c FFT_Lib.c pwelch.c FFT2_Par_Lib.c barrier.c #source code of Fabric Controller
-PULP_CFLAGS = -O3 -g -I$(DIR) -DNUM_CORES=${CORES} -DN_SEG=${n_seg} -DNFFT_SEG=${nfft_seg} -DNFFT=${nfft} -DIN_DYN=${in_dyn} -DWINDOW_DYN=${w_dyn} -DBUILD_LUT  #-DINPUT_CHECK # -DPRINT # -DPRINTF_UART #definition and include
+PULP_CFLAGS = -O3 -g -I$(DIR) -DNUM_CORES=${CORES} -DN_SEG=${n_seg} -DNFFT_SEG=${nfft_seg} -DNFFT=${nfft} -DIN_DYN=${in_dyn} -DWINDOW_DYN=${w_dyn} -DBUILD_LUT -DFFT #-DWINDOWING_CHECK #-DINPUT_CHECK # -DPRINT # -DPRINTF_UART #definition and include
 LIBS += -lm #library
 PULP_LDFLAGS += -L$(DIR)
 
