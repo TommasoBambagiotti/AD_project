@@ -2,6 +2,7 @@
 //#include "test_fixed.h"
 #include "rt/rt_api.h"
 #include "window_2048.h"
+//#include "swaptable2048.h"
 #include "p20us_8192.h"
 #include "arg_cluster.h" //ArgCluster definition
 #include "FFT_Lib.h"
@@ -21,7 +22,7 @@ void cluster_init(ArgCluster_t *ArgC);
 
 
 /*GLOBAL VARIABLES*/
-RT_L1_DATA short Twiddles[2*NFFT_SEG], SwapTable[NFFT_SEG];
+RT_L1_DATA short Twiddles[2*NFFT_SEG];
 RT_L1_DATA unsigned short In_L1[NFFT_SEG], w_ham[NFFT_SEG];
 RT_L1_DATA signed short In_FFT[2*NFFT_SEG];
 RT_L1_DATA unsigned int PSD[NFFT_SEG/2+1];
@@ -247,8 +248,8 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	if((ArgC->PSD) == 0) printf("error allocating PSD\n"); 
 	ArgC->Twiddles=Twiddles; 
 	if((ArgC->Twiddles) == 0) printf("error allocating Twiddles\n"); 
-	ArgC->SwapTable=SwapTable; 
-	if((ArgC->SwapTable) == 0) printf("error allocating SwapTable\n"); 
+	//ArgC->SwapTable=SwapTable; 
+	//if((ArgC->SwapTable) == 0) printf("error allocating SwapTable\n"); 
 	ArgC->Count = Seg_count;
 	
 

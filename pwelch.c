@@ -8,6 +8,7 @@
 #include "FFT_Lib.h"
 #include "stats.h"
 #include "rt/rt_api.h"
+#include "swaptable2048.h"
 //#include "stats.h"
 //#include "p20us_8192.h"
 //#include "window_2048.h" //include windowLUT
@@ -93,7 +94,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 		START_PROFILING();
 #endif		
 
-		SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);	
+		//SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);	
 		seg_Inc = ArgC->Count;
 		if(rt_core_id()==0)
 		printf("segment(inside pwelch): %d\n",seg_Inc);
@@ -167,7 +168,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 	}//for
 
 #ifdef WINDOWING_CHECK	
-	if((rt_core_id() == 0) && (seg_Inc == 1))
+	if((rt_core_id() == 0) && (seg_Inc == 5))
 	{
 		for(m=0;m<NFFT_SEG;m++)
 		{	
@@ -203,7 +204,8 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 	Radix2FFT_DIF_Par(ArgC->In_FFT, ArgC->Twiddles, NFFT_SEG);
 	if(rt_core_id()==0)
 	printf("post FFT\n");
-
+	
+	
 //	t2=rt_time_get_us();
 //	printf("%d point window FFT time: %d\n",NFFT_SEG,t2-t1);
 
@@ -212,8 +214,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 	if(rt_core_id() == 0)
 	{
 	printf("pre swap\n");
-	
-	SwapSamples  ((v2s *) ArgC->In_FFT, ArgC->SwapTable, NFFT_SEG);
+	SwapSamples  ((v2s *) ArgC->In_FFT, SwapTable, NFFT_SEG);
 	printf("post swap\n");
 	}
 
