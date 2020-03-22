@@ -95,7 +95,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 			{
 				//Input transfer
 				rt_dma_memcpy(  	In+(NFFT_SEG/2)*(k-1)+NFFT_SEG,//ext 
-							ArgC->In+(NFFT_SEG/2)*(k-1)+NFFT_SEG,//int
+							ArgC->In,//int
 							sizeof(short)*NFFT_SEG/2,//loc
 							RT_DMA_DIR_EXT2LOC,
 							0,
