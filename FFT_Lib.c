@@ -450,6 +450,7 @@ void SwapSamples (v2s *__restrict__ Data, short *__restrict__ SwapTable, int Ni)
 	   
  int SwapIndex = SwapTable[i];
   
+	if (i < SwapIndex) {
 	
       Data[i] = Data[SwapIndex]; 
 Data[SwapIndex] = S;
