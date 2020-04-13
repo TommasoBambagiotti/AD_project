@@ -45,24 +45,25 @@ for (int k=0; k < 14; k++) { \
     rt_perf_stop(&perf2);						\
     rt_perf_start(&perf2); \
    		\
-			    }
+			    } \
+	
 
 #define STOP_PROFILING() \
        if( (k>=3 )) { \
 	 rt_perf_stop(&perf2);			\
 	 rt_perf_save(&perf2);			\
 	 int cid = rt_core_id();					\
-	 if(k==3) printf("[%d] : num_cycles: %d\n",cid,rt_perf_get(&perf2, RT_PERF_CYCLES) ); \
-	 if(k==4 ) printf("[%d] : num_instr_miss: %d\n",cid,rt_perf_get(&perf2, RT_PERF_IMISS) ); \
-	 if(k==5) printf("[%d] : num_ext_load: %d\n",cid,rt_perf_get(&perf2, RT_PERF_LD_EXT) ); \
-	 if(k==6) printf("[%d] : num_ext_Store: %d\n",cid,rt_perf_get(&perf2, RT_PERF_ST_EXT) ); \
-	 if(k==7) printf("[%d] : num_tcdm_contentions: %d\n",cid,rt_perf_get(&perf2, RT_PERF_TCDM_CONT) ); \
-	 if(k==8) printf("[%d] : num_instrs: %d\n",cid,rt_perf_get(&perf2, RT_PERF_INSTR) ); \
-	 if(k==9) printf("[%d] : num_active_cycles: %d\n",cid,rt_perf_get(&perf2, RT_PERF_ACTIVE_CYCLES) ); \
-	 if(k==10) printf("[%d] : num_load_stalls: %d\n",cid,rt_perf_get(&perf2,RT_PERF_LD_STALL ) ); \
-	 if(k==11) printf("[%d] : num_jumpr_stalls: %d\n",cid,rt_perf_get(&perf2,RT_PERF_JR_STALL ) ); \
-	 if(k==12) printf("[%d] : num_branch: %d\n",cid,rt_perf_get(&perf2,RT_PERF_BRANCH ) ); \
-	if(k==13) printf("[%d] : num_instr: %d\n",cid,rt_perf_get(&perf2,RT_PERF_INSTR ) ); 	  }	\
+	 if(k==3) printf("%d , num_cycles, %d\n",cid,rt_perf_get(&perf2, RT_PERF_CYCLES) ); \
+	 if(k==4 ) printf("%d , num_instr_miss, %d\n",cid,rt_perf_get(&perf2, RT_PERF_IMISS) ); \
+	 if(k==5) printf("%d , num_ext_load, %d\n",cid,rt_perf_get(&perf2, RT_PERF_LD_EXT) ); \
+	 if(k==6) printf("%d , num_ext_Store, %d\n",cid,rt_perf_get(&perf2, RT_PERF_ST_EXT) ); \
+	 if(k==7) printf("%d , num_tcdm_contentions, %d\n",cid,rt_perf_get(&perf2, RT_PERF_TCDM_CONT) ); \
+	 if(k==8) printf("%d , num_instrs, %d\n",cid,rt_perf_get(&perf2, RT_PERF_INSTR) ); \
+	 if(k==9) printf("%d , num_active_cycles, %d\n",cid,rt_perf_get(&perf2, RT_PERF_ACTIVE_CYCLES) ); \
+	 if(k==10) printf("%d , num_load_stalls, %d\n",cid,rt_perf_get(&perf2,RT_PERF_LD_STALL ) ); \
+	 if(k==11) printf("%d , num_jumpr_stalls, %d\n",cid,rt_perf_get(&perf2,RT_PERF_JR_STALL ) ); \
+	 if(k==12) printf("%d , num_branch, %d\n",cid,rt_perf_get(&perf2,RT_PERF_BRANCH ) ); \
+	if(k==13) printf("%d , num_instr, %d\n",cid,rt_perf_get(&perf2,RT_PERF_INSTR ) ); 	  }	\
 	 }						
 
 #else
