@@ -9,7 +9,6 @@
 #define MOUNT           1
 #define UNMOUNT         0
 #define CID             0
-#define PROFILING
 #define S NFFT_SEG/2
 
 /*Function prototypes*/
@@ -67,7 +66,7 @@ void pwelch_parallel(ArgCluster_t *ArgC)
 	
 	for(k=0;k<N_SEG ;k++)
 	{	
-		printf("segment n: %d\n",ArgC->Count);
+		//printf("segment n: %d\n",ArgC->Count);
 		if((ArgC->Count == 0))
 		{
 		//Input transfer
@@ -256,14 +255,14 @@ void SetupWindowLUT(unsigned short *w, int N, int Dyn)
 	//printf("ArgC->In[0] %d In[0] %d \n",ArgC->In[0],In_L1[0]);
 	
 	
-
+/*
 	//only for performance profiling
-/*	
+#ifdef PROFILING
 	ArgC->welch_perf = rt_alloc(RT_ALLOC_L2_CL_DATA, sizeof(rt_perf_t));
         if (ArgC->welch_perf == NULL) return -1;
 	rt_perf_init(ArgC->welch_perf);
 	rt_perf_conf(ArgC->welch_perf,RT_PERF_CYCLES);
-*/	
-
+#endif	
+*/
 }
 
