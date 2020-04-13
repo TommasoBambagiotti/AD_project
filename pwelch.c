@@ -37,6 +37,7 @@ void Radix2FFT_DIF_Par(signed short *__restrict__ Data, signed short *__restrict
 void pwelch (ArgCluster_t *ArgC )
 {
   	int i=0;
+
 	int m=0;
 	int seg_Inc;
 /*		
@@ -52,8 +53,8 @@ void pwelch (ArgCluster_t *ArgC )
 	
 
 	/*###Profiling variables###*/	
-	//unsigned int cycles, instr,t1,t2;
-	/*
+	unsigned int cycles, instr,t1,t2;
+	
 	rt_perf_t *perf;
 
 				
@@ -62,9 +63,9 @@ void pwelch (ArgCluster_t *ArgC )
 	rt_perf_conf(perf, (1<<RT_PERF_CYCLES) | (1<<RT_PERF_INSTR));
 	
 		
-	rt_perf_reset(perf);
-	rt_perf_start(perf);
-	*/
+	//rt_perf_reset(perf);
+	//rt_perf_start(perf);
+	
 	//t1=rt_time_get_us();
 	
 		//if(rt_core_id()==0)	
@@ -88,16 +89,19 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 
 
 #else //INPUT_CHECK
- 
+
+
 #ifdef PROF_PWELCH
-		INIT_PROFILING();
-		START_PROFILING();
+		printf("segment(inside pwelch): %d\n",seg_Inc);
+			INIT_PROFILING();
+		
+			START_PROFILING();
+			
 #endif		
 
 		//SetupR2SwapTable((ArgC->SwapTable), NFFT_SEG);	
 		seg_Inc = ArgC->Count;
-		if(rt_core_id()==0)
-		printf("segment(inside pwelch): %d\n",seg_Inc);
+#ifdef WIND
 		rt_team_barrier();
 		for(m = 0;m < NFFT_SEG/NUM_CORES ;m++)
 		{
@@ -166,7 +170,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 				}break;
 			}//switch
 	}//for
-
+#endif //WIND
 #ifdef WINDOWING_CHECK	
 	if((rt_core_id() == 0) && (seg_Inc == 5))
 	{
@@ -198,25 +202,38 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 //	t1=rt_time_get_us();
 //	if(i==1) {printf("pre-fft\n");i++;}
 
-	if(rt_core_id()==0)
-	printf("pre FFT\n");
 	rt_team_barrier();
 	Radix2FFT_DIF_Par(ArgC->In_FFT, ArgC->Twiddles, NFFT_SEG);
-	if(rt_core_id()==0)
-	printf("post FFT\n");
+
 	
 	
 //	t2=rt_time_get_us();
 //	printf("%d point window FFT time: %d\n",NFFT_SEG,t2-t1);
 
-
-	/*only core 0 swaps samples*/
+#ifdef PROF_SWAP
+	if(rt_core_id()==0)
+	{
+	rt_perf_reset(perf);
+	rt_perf_start(perf);
+	}
+#endif
 	if(rt_core_id() == 0)
 	{
-	printf("pre swap\n");
+	
 	SwapSamples  ((v2s *) ArgC->In_FFT, SwapTable, NFFT_SEG);
-	printf("post swap\n");
+	
 	}
+#ifdef PROF_SWAP
+	if(rt_core_id()==0)
+	{
+	rt_perf_stop(perf);
+	rt_perf_save(perf);
+	printf("Cycle, %d\n",rt_perf_get(perf,RT_PERF_CYCLES));
+	printf("Instr, %d\n",rt_perf_get(perf,RT_PERF_INSTR));
+	}
+#endif
+	
+
 
 
 /*					
@@ -241,7 +258,7 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 
 #endif //FFT_SECTION
 
-#ifdef PSD
+#ifdef PowerDS
 	rt_team_barrier();	
 	for(i=0;i<(NFFT_SEG/2)/NUM_CORES;i++)
 	{
@@ -308,8 +325,11 @@ if((rt_core_id() == 0) && (ArgC->Count == 1))
 #endif //PSD
 
 #ifdef PROF_PWELCH
+	
 	STOP_PROFILING();
 #endif
+
+
 
 	//	printf("post prodotto\n");
 /*		
